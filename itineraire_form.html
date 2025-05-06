@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Itinéraire sécurisé</title>
+    <style>
+      body { font-family: Arial; padding: 20px; }
+      input, button, select { margin: 10px 0; padding: 10px; width: 100%; max-width: 500px; }
+      #map { height: 70vh; width: 100%; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <h2>Planifier un itinéraire sécurisé</h2>
+    <input id="origin" type="text" placeholder="Origine (ex: Paris)" />
+    <input id="destination" type="text" placeholder="Destination (ex: Lyon)" />
+    <button onclick="initMap()">Afficher les itinéraires</button>
+    <select id="routeSelector" onchange="changeRoute()" style="display:none;"></select>
+    <div id="map"></div>
+
+    <script>
+      let directionsRenderer, directionsService, allRoutes;
+      function initMap() {
+        const origin = document.getElementById("origin").value;
+        const destination = document.getElementById("destination").value;
+        if (!origin || !destination) { alert("Saisir origine et destination."); return; }
+
+        if (!directionsRenderer) {
+          const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 7, center: { lat: 48.8566, lng: 2.3522 }
+          });
+          directionsService = new google.maps.DirectionsService();
+          directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+        }
+
+        const request = {
+          origin: origin,
+          destination: destination,
+          travelMode: 'DRIVING',
+          provideRouteAlternatives: true
+        };
+
+        directionsService.route(request, (result, status) => {
+          if (status === 'OK') {
+            allRoutes = result.routes;
+            directionsRenderer.setDirections(result);
+            directionsRenderer.setRouteIndex(0);
+            populateSelector(allRoutes);
+          } else {
+            alert("Erreur : " + status);
+          }
+        });
+      }
+
+      function populateSelector(routes) {
+        const selector = document.getElementById("routeSelector");
+        selector.style.display = "block";
+        selector.innerHTML = "";
+        routes.forEach((route, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.text = `Itinéraire ${i+1} - ${route.legs[0].distance.text}, ${route.legs[0].duration.text}`;
+          selector.appendChild(opt);
+        });
+      }
+
+      function changeRoute() {
+        const idx = parseInt(document.getElementById("routeSelector").value);
+        directionsRenderer.setRouteIndex(idx);
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=TON_API_KEY&libraries=places"></script>
+  </body>
+</html>
