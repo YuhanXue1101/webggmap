@@ -1,35 +1,43 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Itinéraire sécurisé</title>
     <style>
-      body { font-family: Arial; padding: 20px; }
-      input, button, select {
-        margin: 10px 0; padding: 10px;
-        width: 100%; max-width: 500px;
+      body {
+        font-family: Arial;
+        padding: 20px;
       }
-      #map { height: 70vh; width: 100%; margin-top: 20px; }
+      input, button, select {
+        margin: 10px 0;
+        padding: 10px;
+        width: 100%;
+        max-width: 500px;
+      }
+      #map {
+        height: 70vh;
+        width: 100%;
+        margin-top: 20px;
+      }
     </style>
-
-    <!-- ✅ Google Maps -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCa5eES736vT1iDDLFLd_wlMNRiSqz9aks&libraries=places,geometry"></script>
-
-    <!-- ✅ Firebase v8.10 compatible -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCa5eES736vT1iDDLFLd_wlMNRiSqz9aks&libraries=places,geometry"></script>
   </head>
-
   <body>
     <h2>Planifier un itinéraire sécurisé</h2>
     <input id="origin" type="text" placeholder="Origine (ex: Paris)" />
     <input id="destination" type="text" placeholder="Destination (ex: Lyon)" />
     <button onclick="initMap()">Afficher les itinéraires</button>
-    <select id="routeSelector" title="Sélectionner un itinéraire" onchange="changeRoute()" style="display:none;"></select>
+    <select id="routeSelector" onchange="changeRoute()" style="display:none;" title="Sélection itinéraire"></select>
     <div id="map"></div>
 
     <script>
-      // ✅ Initialiser Firebase d'abord !
+      // Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyCVrtMdl4OXsi3DelUAfBDnrLmqA6uNGk0",
         authDomain: "safe-b04bc.firebaseapp.com",
@@ -91,27 +99,46 @@
         }
 
         const request = {
-          origin: origin,
-          destination: destination,
+          origin,
+          destination,
           travelMode: 'DRIVING',
           provideRouteAlternatives: true
         };
 
         directionsService.route(request, (result, status) => {
-          if (status === 'OK') {const routesWithScore = result.routes
-  .filter(route => route.overview_polyline && route.overview_polyline.points)
-  .map((route, index) => {
-    const path = google.maps.geometry.encoding.decodePath(route.overview_polyline.points);
-    let riskCount = 0;
-    path.forEach(point => {
-      riskZones.forEach(zone => {
-        const d = google.maps.geometry.spherical.computeDistanceBetween(point, new google.maps.LatLng(zone.lat, zone.lng));
-        if (d < 100) riskCount++;
-      });
-    });
-    return { route, index, riskCount };
-  });
+          if (status === 'OK') {
+            const routesWithScore = result.routes
+              .filter(route => route.overview_polyline && route.overview_polyline.points)
+              .map((route, index) => {
+                const path = google.maps.geometry.encoding.decodePath(route.overview_polyline.points);
+                let riskCount = 0;
+                path.forEach(point => {
+                  riskZones.forEach(zone => {
+                    const d = google.maps.geometry.spherical.computeDistanceBetween(
+                      point,
+                      new google.maps.LatLng(zone.lat, zone.lng)
+                    );
+                    if (d < 100) riskCount++;
+                  });
+                });
+                return { route, index, riskCount };
+              }).sort((a, b) => a.riskCount - b.riskCount);
 
+            if (routesWithScore.length === 0) {
+              alert("Aucun itinéraire avec polyligne disponible.");
+              return;
+            }
+
+            allRoutes = routesWithScore.map(r => r.route);
+            directionsRenderer.setDirections({ routes: allRoutes });
+            directionsRenderer.setRouteIndex(routesWithScore[0].index);
+            populateSelector(routesWithScore);
+            drawRiskMarkers();
+            alert(`Itinéraire le plus sûr sélectionné automatiquement : ${routesWithScore[0].riskCount} zones à risque.`);
+          } else {
+            alert("Erreur Google Maps : " + status);
+          }
+        });
       }
 
       function populateSelector(routes) {
@@ -133,3 +160,4 @@
     </script>
   </body>
 </html>
+
