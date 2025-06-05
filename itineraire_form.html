@@ -37,7 +37,6 @@
     <div id="map"></div>
 
     <script>
-      // Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyCVrtMdl4OXsi3DelUAfBDnrLmqA6uNGk0",
         authDomain: "safe-b04bc.firebaseapp.com",
@@ -125,7 +124,7 @@
               }).sort((a, b) => a.riskCount - b.riskCount);
 
             if (routesWithScore.length === 0) {
-              alert("Aucun itinéraire avec polyligne disponible.");
+              alert("Aucun itinéraire disponible.");
               return;
             }
 
@@ -134,7 +133,7 @@
             directionsRenderer.setRouteIndex(routesWithScore[0].index);
             populateSelector(routesWithScore);
             drawRiskMarkers();
-            alert(`Itinéraire le plus sûr sélectionné automatiquement : ${routesWithScore[0].riskCount} zones à risque.`);
+            alert(`Itinéraire le plus sûr : ${routesWithScore[0].riskCount} zones à risque.`);
           } else {
             alert("Erreur Google Maps : " + status);
           }
@@ -160,4 +159,6 @@
     </script>
   </body>
 </html>
+
+
 
