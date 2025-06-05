@@ -98,29 +98,20 @@
         };
 
         directionsService.route(request, (result, status) => {
-          if (status === 'OK') {
-            const routesWithScore = result.routes.map((route, index) => {
-              const path = google.maps.geometry.encoding.decodePath(route.overview_polyline.points);
-              let riskCount = 0;
-              path.forEach(point => {
-                riskZones.forEach(zone => {
-                  const d = google.maps.geometry.spherical.computeDistanceBetween(point, new google.maps.LatLng(zone.lat, zone.lng));
-                  if (d < 100) riskCount++;
-                });
-              });
-              return { route, index, riskCount };
-            }).sort((a, b) => a.riskCount - b.riskCount);
+          if (status === 'OK') {const routesWithScore = result.routes
+  .filter(route => route.overview_polyline && route.overview_polyline.points)
+  .map((route, index) => {
+    const path = google.maps.geometry.encoding.decodePath(route.overview_polyline.points);
+    let riskCount = 0;
+    path.forEach(point => {
+      riskZones.forEach(zone => {
+        const d = google.maps.geometry.spherical.computeDistanceBetween(point, new google.maps.LatLng(zone.lat, zone.lng));
+        if (d < 100) riskCount++;
+      });
+    });
+    return { route, index, riskCount };
+  });
 
-            allRoutes = routesWithScore.map(r => r.route);
-            directionsRenderer.setDirections({ routes: allRoutes });
-            directionsRenderer.setRouteIndex(routesWithScore[0].index);
-            populateSelector(routesWithScore);
-            drawRiskMarkers();
-            alert(`Itinéraire le plus sûr sélectionné automatiquement : ${routesWithScore[0].riskCount} zones à risque.`);
-          } else {
-            alert("Erreur Google Maps : " + status);
-          }
-        });
       }
 
       function populateSelector(routes) {
