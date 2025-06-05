@@ -5,34 +5,39 @@
     <title>Itinéraire sécurisé</title>
     <style>
       body { font-family: Arial; padding: 20px; }
-      input, button, select { margin: 10px 0; padding: 10px; width: 100%; max-width: 500px; }
+      input, button, select {
+        margin: 10px 0; padding: 10px;
+        width: 100%; max-width: 500px;
+      }
       #map { height: 70vh; width: 100%; margin-top: 20px; }
     </style>
+
+    <!-- ✅ Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCa5eES736vT1iDDLFLd_wlMNRiSqz9aks&libraries=places,geometry"></script>
+
+    <!-- ✅ Firebase v8.10 compatible -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   </head>
+
   <body>
     <h2>Planifier un itinéraire sécurisé</h2>
     <input id="origin" type="text" placeholder="Origine (ex: Paris)" />
     <input id="destination" type="text" placeholder="Destination (ex: Lyon)" />
     <button onclick="initMap()">Afficher les itinéraires</button>
-    <select id="routeSelector" onchange="changeRoute()" style="display:none;"></select>
+    <select id="routeSelector" title="Sélectionner un itinéraire" onchange="changeRoute()" style="display:none;"></select>
     <div id="map"></div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCa5eES736vT1iDDLFLd_wlMNRiSqz9aks&libraries=places,geometry"></script>
-
     <script>
-      // 🔐 Firebase config (remplace par tes vraies infos)
+      // ✅ Initialiser Firebase d'abord !
       const firebaseConfig = {
-          apiKey: "AIzaSyCVrtMdl4OXsi3DelUAfBDnrLmqA6uNGk0",
-          authDomain: "safe-b04bc.firebaseapp.com",
-          projectId: "safe-b04bc",
-          storageBucket: "safe-b04bc.firebasestorage.app",
-          messagingSenderId: "571704741536",
-          appId: "1:571704741536:web:ca2e3deaf87f93a5a543c5"
-          };
+        apiKey: "AIzaSyCVrtMdl4OXsi3DelUAfBDnrLmqA6uNGk0",
+        authDomain: "safe-b04bc.firebaseapp.com",
+        projectId: "safe-b04bc",
+        storageBucket: "safe-b04bc.appspot.com",
+        messagingSenderId: "571704741536",
+        appId: "1:571704741536:web:ca2e3deaf87f93a5a543c5"
+      };
 
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
