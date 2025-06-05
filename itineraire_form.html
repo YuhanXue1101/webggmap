@@ -106,8 +106,10 @@
 
         directionsService.route(request, (result, status) => {
           if (status === 'OK') {
+               
+
             const routesWithScore = result.routes
-              .filter(route => route.overview_polyline && route.overview_polyline.points)
+              
               .map((route, index) => {
                 const path = google.maps.geometry.encoding.decodePath(route.overview_polyline.points);
                 let riskCount = 0;
